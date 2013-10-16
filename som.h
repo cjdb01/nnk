@@ -4,7 +4,7 @@
  * 1 November, 2013
  *
  * som.h
- * The self-organising map implementation file.
+ * The self-organising map interface file.
  *
  * This data structure is intrinsically designed to reflect the STL. The following conventions are
  * used throughout all files:
@@ -41,12 +41,25 @@
  *      *** Template parameters are identified by the `typename' keyword, unless a class/struct is
  *          explicitly expected.
  *
+ *      iterators are often expressed as `it', const_iterators are often expressed as `cit',
+ *		reverse_iterators as `rit', and reverse_const_iterators as `rcit'
+ *
  * Note that this is a C++11 file, subject to GCC 4.7.2, as on the CSE machines
+ *
+ * Copyright (c) Christopher 2013, under the MIT License.
+ * All rights reserved.
  */
  
 #include <array>
+#include <chrono>
+#include <cmath>
+#include <cstdint>
 #include <iostream>
+#include <random>
 #include <vector>
+
+#include "typedef.h" // This file is NOT subject to the above coding convention, as it was written
+				     // well before this convention is drafted. It is an early version of it :)
 
 namespace pipe
 {
@@ -55,32 +68,39 @@ namespace pipe
     // as the output type
     // Some things may not be implemented as they are beyond the scope of the assignment.
     // I am planning on expanding this class after semester.
-    template <typename InputType = double, typename OutputType = InputType,
-                                                                         unsigned int InputSize = 2>
-    class self_ordering_map
+    template <typename InputType = double, typename OutputType = InputType, unative_t InputSize = 2,
+              unative_t OutputSizeX = 2, unative_t OutputSizeY = 2>
+    class self_organising_map
     {
     private:
-        std::vector<std::array<InputType, InputSize>> m_input;
-        std::vector<std::array<InputType, InputSize>>
-        const InputType initial_learning_rate;
-        InputType learning_rate_decay;
-    public:    
+		typedef std::array<InputType, InputSize> input_vector;
+	
+		static const int rand_max = 1000000;
+        std::mt19937 m_rand;
+        const double m_initialLR;
+        const double m_lrRateDecay;
+        const double m_initialNbdWidth;
+        const double m_nbdWidthDecay;
+        std::vector<input_vector> m_input;
+        std::vector<input_vector> m_weight;
+        std::array<std::array<OutputType, OutputSizeY>, OutputSizeX> m_output;
+		
+		// private member functions
+		double small_random() const;
+		double h() const;
+		double euclidean_distance() const;
+		void adjust_weight();
+    public:
         // Constructor, and copy control (i.e. copying and moving)
-        self_ordering_map();
-        self_ordering_map(std::istream);
-        self_ordering_map(const self_ordering_map& o) = default;
-        self_ordering_map(self_ordering_map&& o) = default;
-        
-        self_ordering_map& operator=(const self_ordering_map& o) = default;
-        self_ordering_map& operator=(self_ordering_map&& o) = default;
-        
-        ~self_ordering_map() = default;
+        self_organising_map(const double& = 0.5, const double& = 0.5, const double& = 0.5,
+                          const double& = 0.5);
+        self_organising_map(std::istream);
         
         // Element access
+        std::array<InputType, InputSize> get_input() const;
+        std::array<InputType, InputSize> get_weight() const;
         
-        
-        // SOM specifics
-        void adjust_weights();
-        value_type euclidean_distance(const_reference j, const_reference r) const;  
     };
 }
+
+#include "som.tem"
