@@ -19,7 +19,8 @@ namespace pipe
     /*
      * To save space, unused template parameters will be referred to by only the letters
      * that start each word. Template parameters that are actually used will have a meaningful
-     * name instead of a shorthand equivalent.
+     * name instead of a shorthand equivalent. If you don't need to know about it, its name is
+     * meaningless anyway!
      */
     template <typename T, typename Container = std::vector<T>>
     double euclidean_distance(const Container& x, const Container& y)
@@ -33,23 +34,21 @@ namespace pipe
         
         for (auto i = x.cbegin(), j = y.cbegin(); i != x.cend(); ++i, ++j)
         {
-            dist += std::pow(i - j, 2);
+            dist += std::pow(*i - *j, 2);
         }
         
         return std::sqrt(dist);
     }
-     
-    template <typename IT, typename OT, unative_t IS, unative_t OSX, unative_t OSY>
-    self_organising_map<IT, OT, IS, OSX, OSY>::self_organising_map(const double& init_lr, const double& lr_decay, const double& init_nbd, const double& nbd_decay) :
-        m_rand(std::chrono::system_clock::now().time_since_epoch().count()), m_initialLR(init_lr), m_lrRateDecay(lr_decay), m_initialNbdWidth(init_nbd), m_nbdWidthDecay(nbd_decay)
+   
+    template <typename T, unative_t IS, unative_t OSX, unative_t OSY, double ILR, double LRD, double INW, double NWD>
+    self_organising_map<T, IS, OSX, OSY, ILR, LRD, INW, NWD>::self_organising_map() : m_rand(std::chrono::system_clock::now().time_since_epoch().count())
     {
         m_rand.min(-rand_max/10);
         m_rand.max(rand_max/10);
     }
 
-    template <typename IT, typename OT, unative_t IS, unative_t OSX, unative_t OSY>
-    self_organising_map<IT, OT, IS, OSX, OSY>::self_organising_map(std::istream& in, const double& init_lr, const double& lr_decay, const double& init_nbd, const double& nbd_decay) :
-        self_organising_map(init_lr, lr_decay, init_nbd, nbd_decay)
+    template <typename T, unative_t IS, unative_t OSX, unative_t OSY, double ILR, double LRD, double INW, double NWD>
+    self_organising_map<T, IS, OSX, OSY, ILR, LRD, INW, NWD>::self_organising_map(std::istream& in) : self_organising_map()
     {
         while (in.eof() == false)
         {
@@ -71,14 +70,14 @@ namespace pipe
         }
     }
     
-    template <typename IT, typename OT, unative_t IS, unative_t OSX, unative_t OSY>
-    double self_organising_map<IT, OT, IS, OSX, OSY>::small_random() const
+    template <typename T, unative_t IS, unative_t OSX, unative_t OSY, double ILR, double LRD, double INW, double NWD>
+    self_organising_map<T, IS, OSX, OSY, ILR, LRD, INW, NWD>::small_random() const
     {
         return (static_cast<double>(m_rand())/rand_max);
     }
     
-    template <typename IT, typename OT, unative_t InputSize, unative_t OSX, unative_t OSY>
-    double self_organising_map<IT, OT, InputSize, OSX, OSY>::adjust_weight(const input_vector& x)
+    template <typename T, unative_t IS, unative_t OSX, unative_t OSY, double ILR, double LRD, double INW, double NWD>
+    self_organising_map<T, IS, OSX, OSY, ILR, LRD, INW, NWD>::adjust_weight(const input_vector& x)
     {
         for (auto w = m_weight.back().begin(), x = m_input.cbegin(); w != m_weight.back().end(); ++w, ++x)
         {
@@ -89,11 +88,9 @@ namespace pipe
         }
     }
     
-    template <typename InputType, typename OT, unative_t InputSize, unative_t OSX, unative_t OSY>
-    double self_organising_map<InputType, OT, InputSize, OSX, OSY>::h(const std::array<InputType, InputSize>& j) const
+    template <typename T, unative_t IS, unative_t OSX, unative_t OSY, double ILR, double LRD, double INW, double NWD>
+    self_organising_map<T, IS, OSX, OSY, ILR, LRD, INW, NWD>::h(const std::array<InputType, InputSize>& j) const
     {
         return std::exp(-std::pow(euclidean_distance(j, m_winningNeuron), 2) / (2 * std::pow(m_nbdWidth, 2)));
-    }
-    
-    
+    }   
 }

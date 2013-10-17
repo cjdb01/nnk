@@ -63,44 +63,42 @@
 
 namespace pipe
 {
-    // This class is able to support many types and many dimensions
-    // The class supports both an input type and an output type, in case a discrete value is desired
-    // as the output type
-    // Some things may not be implemented as they are beyond the scope of the assignment.
-    // I am planning on expanding this class after semester.
-    template <typename InputType = double, typename OutputType = InputType, unative_t InputSize = 2,
-              unative_t OutputSizeX = 2, unative_t OutputSizeY = 2>
+    // The default template is set for run 1
+    template <typename T = double, unative_t InputSize = 2, unative_t OutputSizeX = 4, 
+              unative_t OutputSizeY = 2, T InitialLR = 0.1, T LRDecay = 0.001,
+              T InitialNbdWidth = 2.0, T NbdWidthDecay = 0.001
+             >
     class self_organising_map
     {
     private:
-		typedef std::array<InputType, InputSize> input_vector;
-	
-		static const int rand_max = 1000000;
-        std::mt19937 m_rand;
-        const double m_initialLR;
-        const double m_lrRateDecay;
-        const double m_initialNbdWidth;
-        const double m_nbdWidthDecay;
-        std::vector<input_vector> m_input;
-        std::vector<input_vector> m_weight;
-        std::array<std::array<OutputType, OutputSizeY>, OutputSizeX> m_output;
-		
-		// private member functions
-		double small_random() const;
-		double h() const;
-		double euclidean_distance() const;
-		void adjust_weight();
+        // State data
+        T m_learningRate;
+        T m_nbdWidth;
+        
+        // Random engine
+        const int m_randMax;
+        std::mt19937 m_random;
+        
+        // Neural net
+        std::vector<std::array<T, InputSize>> m_input;
+        std::vector<std::array<std::array<T, OutputSizeY>, OutputSizeX> m_output;
+        
+        // Private member functions
+        template <typename Container = std::array<T, InputSize>>
+        T euclidean_distance(Container& x, Container& y) const;
+        
+        T tiny_random() const;
+        T h() const;
+        void adjust_weight();
+        
+        template <typename RandomAccessIterator>
+        void randomise(RandomAccessIterator& first, RandomAccessIterator& last);
     public:
-        // Constructor, and copy control (i.e. copying and moving)
-        self_organising_map(const double& = 0.5, const double& = 0.5, const double& = 0.5,
-                          const double& = 0.5);
-        self_organising_map(std::istream);
+        // Constructors
+        self_organising_map(const int rand_max = 1000);
+        self_organising_map(std::istream&);
         
-        // Element access
-        std::array<InputType, InputSize> get_input() const;
-        std::array<InputType, InputSize> get_weight() const;
-        
+        // Epoch run
+        void run(const int epochs = 5000);
     };
 }
-
-#include "som.tem"
