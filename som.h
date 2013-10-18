@@ -75,6 +75,7 @@ namespace pipe
         // State data
         T m_learningRate;
         T m_nbdWidth;
+        input_type* m_winningNeuron;
         
         // Constant data
         const T m_lrDecay;
@@ -90,10 +91,10 @@ namespace pipe
         
         // Private member functions
         template <typename Container = input_type>
-        T euclidean_distance(Container& x, Container& y) const;
+        T euclidean_distance(const Container& x, const Container& y) const;
         
         T tiny_rand() const;
-        T h() const;
+        T h(const input_type& j) const;
         void decay();
         void adjust_weight();
     public:

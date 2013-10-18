@@ -24,7 +24,7 @@ namespace pipe
      */
     template <typename T, size_t IS, size_t OSX, size_t OSY>
     kohonen<T, IS, OSX, OSY>::kohonen(const T& ilr, const T& lr_decay, const T& inbd_width, const T& nbd_width_decay, const T& min_weight, const T& max_weight)
-     : m_learningRate(ilr), m_lrDecay(lr_decay), m_nbdWidth(inbd_width), m_nbdWidthDecay(nbd_width_decay), m_random(std::chrono::system_clock::now().time_since_epoch().count()), m_distribute(MinWeight, MaxWeight) {}
+     : m_learningRate(ilr), m_lrDecay(lr_decay), m_nbdWidth(inbd_width), m_nbdWidthDecay(nbd_width_decay), m_random(std::chrono::system_clock::now().time_since_epoch().count()), m_distribute(min_weight, max_weight) {}
 
     template <typename T, size_t IS, size_t OSX, size_t OSY>
     kohonen<T, IS, OSX, OSY>::kohonen(std::istream& in, const T& ilr, const T& lr_decay, const T& inbd_width, const T& nbd_width_decay, const T& min_weight, const T& max_weight) : kohonen(ilr, lr_decay, inbd_width, nbd_width_decay, min_weight, max_weight)
@@ -57,8 +57,37 @@ namespace pipe
     }
 
     template <typename T, size_t IS, size_t OSX, size_t OSY>
-    double kohonen<T, IS, OSX, OSY::tiny_rand() const
+    T kohonen<T, IS, OSX, OSY>::tiny_rand() const
     {
         return m_distribute(m_random);
+    }
+    
+    template <typename T, size_t InputSize, size_t OSX, size_t OSY>
+    template <typename Container>
+    T kohonen<T, IS, OSX, OSY>::euclidean_distance_squared(const Container& x, const Container& y) const
+    {
+        // Euclidean distance = sqrt(sum((x_i - y_i)^2))
+        T sum = 0;
+        for (auto i = 0; i < InputSize; ++i)
+        {
+            sum += std::pow(x[i] - y[i], 2);
+        }
+        
+        return sum;
+    }
+    
+    template <typename T, size_t IS, size_t OSX, size_t OSY>
+    T kohonen<T, IS, OSX, OSY>::h(const input_type& j) const
+    {
+        return std::exp(-euclidean_distance_squared(j, &m_winningNeuron) / (2 * std::pow(m_nbdWidth, 2)));
+    }
+    
+    template <typename T, size_t IS, size_t OSX, size_t OSY>
+    void kohonen<T, IS, OSX, OSY>::adjust_weight()
+    {
+        for (auto i = 0; i < OutputSizeX; ++i)
+        {
+            for (auto j = 0; j < OutputSizeY
+        }
     }
 }
