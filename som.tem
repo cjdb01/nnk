@@ -22,75 +22,43 @@ namespace pipe
      * name instead of a shorthand equivalent. If you don't need to know about it, its name is
      * meaningless anyway!
      */
-    template <typename T, typename Container = std::vector<T>>
-    double euclidean_distance(const Container& x, const Container& y)
-    {
-        if (x.size() != y.size())
-        {
-            throw std::string("Vectors x and y are not the same size!");
-        }
-        
-        double dist = 0;
-        
-        for (auto i = x.cbegin(), j = y.cbegin(); i != x.cend(); ++i, ++j)
-        {
-            dist += std::pow(*i - *j, 2);
-        }
-        
-        return std::sqrt(dist);
-    }
-   
-    template <typename T, unative_t IS, unative_t OSX, unative_t OSY, double ILR, double LRD, double INW, double NWD>
-    self_organising_map<T, IS, OSX, OSY, ILR, LRD, INW, NWD>::self_organising_map() : m_rand(std::chrono::system_clock::now().time_since_epoch().count())
-    {
-        m_rand.min(-rand_max/10);
-        m_rand.max(rand_max/10);
-    }
+    template <typename T, size_t IS, size_t OSX, size_t OSY>
+    kohonen<T, IS, OSX, OSY>::kohonen(const T& ilr, const T& lr_decay, const T& inbd_width, const T& nbd_width_decay, const T& min_weight, const T& max_weight)
+     : m_learningRate(ilr), m_lrDecay(lr_decay), m_nbdWidth(inbd_width), m_nbdWidthDecay(nbd_width_decay), m_random(std::chrono::system_clock::now().time_since_epoch().count()), m_distribute(MinWeight, MaxWeight) {}
 
-    template <typename T, unative_t IS, unative_t OSX, unative_t OSY, double ILR, double LRD, double INW, double NWD>
-    self_organising_map<T, IS, OSX, OSY, ILR, LRD, INW, NWD>::self_organising_map(std::istream& in) : self_organising_map()
+    template <typename T, size_t IS, size_t OSX, size_t OSY>
+    kohonen<T, IS, OSX, OSY>::kohonen(std::istream& in, const T& ilr, const T& lr_decay, const T& inbd_width, const T& nbd_width_decay, const T& min_weight, const T& max_weight) : kohonen(ilr, lr_decay, inbd_width, nbd_width_decay, min_weight, max_weight)
     {
+        input_type a;
+        output_type b;
+
         while (in.eof() == false)
         {
-            m_input.push_back();
-            m_weight.push_back();
-            
-            //std::for_each(m_input.back().begin(), m_input.back().end(), (std::array<IT, IS>::iterator& it)[&]{ in >> *it; in.get(); })
-            
-            for (auto it = m_input.back().begin() : m_input.back().end())
+            std::for_each(a.begin(), a.end(), (input_type::iterator& it) [&] { in >> *it; in.get(); });
+
+            for (auto i = b.begin() : b.end())
             {
-                in >> *it;
-                in.get();
+                for (auto j = i.begin() : i.end())
+                {
+                    *j = tiny_rand();
+                }
             }
-            
-            for (auto it = m_input.back().begin() : m_input.back().end())
-            {
-                *it = small_random();
-            }
+
+            m_input.push_back(a);
+            m_output.push_back(b);
         }
     }
     
-    template <typename T, unative_t IS, unative_t OSX, unative_t OSY, double ILR, double LRD, double INW, double NWD>
-    self_organising_map<T, IS, OSX, OSY, ILR, LRD, INW, NWD>::small_random() const
+    template <typename T, size_t IS, size_t OSX, size_t OSY>
+    void kohonen<T, IS, OSX, OSY>::decay()
     {
-        return (static_cast<double>(m_rand())/rand_max);
+        m_learningRate *= 1 - LRDecay;
+        m_nbdWidth     *= 1 - NbdWidthDecay;
     }
-    
-    template <typename T, unative_t IS, unative_t OSX, unative_t OSY, double ILR, double LRD, double INW, double NWD>
-    self_organising_map<T, IS, OSX, OSY, ILR, LRD, INW, NWD>::adjust_weight(const input_vector& x)
+
+    template <typename T, size_t IS, size_t OSX, size_t OSY>
+    double kohonen<T, IS, OSX, OSY::tiny_rand() const
     {
-        for (auto w = m_weight.back().begin(), x = m_input.cbegin(); w != m_weight.back().end(); ++w, ++x)
-        {
-            for (auto i = 0; i < InputSize; ++i)
-            {
-                (*w)[i] += m_learningRate * h() * (*x - (*w)[i]);
-            }
-        }
+        return m_distribute(m_random);
     }
-    
-    template <typename T, unative_t IS, unative_t OSX, unative_t OSY, double ILR, double LRD, double INW, double NWD>
-    self_organising_map<T, IS, OSX, OSY, ILR, LRD, INW, NWD>::h(const std::array<InputType, InputSize>& j) const
-    {
-        return std::exp(-std::pow(euclidean_distance(j, m_winningNeuron), 2) / (2 * std::pow(m_nbdWidth, 2)));
-    }   
 }

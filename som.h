@@ -64,39 +64,42 @@
 namespace pipe
 {
     // The default template is set for run 1
-    template <typename T = double, unative_t InputSize = 2, unative_t OutputSizeX = 4, 
-              unative_t OutputSizeY = 2, T InitialLR = 0.1, T LRDecay = 0.001,
-              T InitialNbdWidth = 2.0, T NbdWidthDecay = 0.001
-             >
-    class self_organising_map
+    template <typename T = double, size_t InputSize = 2, size_t OutputSizeX = 4, size_t OutputSizeY = 2>
+    class kohonen
     {
     private:
+        // Some important types
+        typedef std::array<T, InputSize>                            input_type;
+        typedef std::array<std::array<T, OutputSizeY>, OutputSizeX> output_type;
+        
         // State data
         T m_learningRate;
         T m_nbdWidth;
         
+        // Constant data
+        const T m_lrDecay;
+        const T m_nbdWidthDecay;
+        
         // Random engine
-        const int m_randMax;
-        std::mt19937 m_random;
+        std::default_random_engine        m_random;
+        std::uniform_real_distribution<T> m_distribute;
         
         // Neural net
-        std::vector<std::array<T, InputSize>> m_input;
-        std::vector<std::array<std::array<T, OutputSizeY>, OutputSizeX> m_output;
+        std::vector<input_type> m_input;
+        std::vector<output_type> m_output;
         
         // Private member functions
-        template <typename Container = std::array<T, InputSize>>
+        template <typename Container = input_type>
         T euclidean_distance(Container& x, Container& y) const;
         
-        T tiny_random() const;
+        T tiny_rand() const;
         T h() const;
+        void decay();
         void adjust_weight();
-        
-        template <typename RandomAccessIterator>
-        void randomise(RandomAccessIterator& first, RandomAccessIterator& last);
     public:
         // Constructors
-        self_organising_map(const int rand_max = 1000);
-        self_organising_map(std::istream&);
+        kohonen(const T& initial_lr = 0.1, const T& lr_decay = 0.001, const T& initial_nbd_width = 2.0, const T& nbd_width_decay = 0.001, const T& min_weight = -0.1, const T& max_weight = 0.1);
+        kohonen(std::istream& in, const T& initial_lr = 0.1, const T& lr_decay = 0.001, const T& initial_nbd_width = 2.0, const T& nbd_width_decay = 0.001, const T& min_weight = -0.1, const T& max_weight = 0.1);
         
         // Epoch run
         void run(const int epochs = 5000);
