@@ -49,7 +49,7 @@
  * Copyright (c) Christopher 2013, under the MIT License.
  * All rights reserved.
  */
- 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cmath>
@@ -57,9 +57,6 @@
 #include <iostream>
 #include <random>
 #include <vector>
-
-#include "typedef.h" // This file is NOT subject to the above coding convention, as it was written
-				     // well before this convention is drafted. It is an early version of it :)
 
 namespace pipe
 {
@@ -71,6 +68,7 @@ namespace pipe
         // Some important types
         typedef std::array<T, InputSize>                            input_type;
         typedef std::array<std::array<T, OutputSizeY>, OutputSizeX> output_type;
+        typedef std::chrono::system_clock clock;
         
         // State data
         T m_learningRate;
@@ -91,7 +89,7 @@ namespace pipe
         
         // Private member functions
         template <typename Container = input_type>
-        T euclidean_distance(const Container& x, const Container& y) const;
+        T euclidean_distance_squared(const Container& x, const Container& y) const;
         
         T tiny_rand() const;
         T h(const input_type& j) const;
@@ -106,3 +104,5 @@ namespace pipe
         void run(const int epochs = 5000);
     };
 }
+
+#include "som.tem"

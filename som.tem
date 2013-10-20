@@ -24,7 +24,7 @@ namespace pipe
      */
     template <typename T, size_t IS, size_t OSX, size_t OSY>
     kohonen<T, IS, OSX, OSY>::kohonen(const T& ilr, const T& lr_decay, const T& inbd_width, const T& nbd_width_decay, const T& min_weight, const T& max_weight)
-     : m_learningRate(ilr), m_lrDecay(lr_decay), m_nbdWidth(inbd_width), m_nbdWidthDecay(nbd_width_decay), m_random(std::chrono::system_clock::now().time_since_epoch().count()), m_distribute(min_weight, max_weight) {}
+     : m_learningRate(ilr), m_nbdWidth(inbd_width), m_lrDecay(lr_decay), m_nbdWidthDecay(nbd_width_decay), m_random(clock::now().time_since_epoch().count()), m_distribute(min_weight, max_weight) {}
 
     template <typename T, size_t IS, size_t OSX, size_t OSY>
     kohonen<T, IS, OSX, OSY>::kohonen(std::istream& in, const T& ilr, const T& lr_decay, const T& inbd_width, const T& nbd_width_decay, const T& min_weight, const T& max_weight) : kohonen(ilr, lr_decay, inbd_width, nbd_width_decay, min_weight, max_weight)
@@ -34,7 +34,11 @@ namespace pipe
 
         while (in.eof() == false)
         {
-            std::for_each(a.begin(), a.end(), (input_type::iterator& it) [&] { in >> *it; in.get(); });
+            for (auto it = a.begin() : a.end())
+            {
+                in >> *it;
+                in.get();
+            }
 
             for (auto i = b.begin() : b.end())
             {
@@ -52,8 +56,8 @@ namespace pipe
     template <typename T, size_t IS, size_t OSX, size_t OSY>
     void kohonen<T, IS, OSX, OSY>::decay()
     {
-        m_learningRate *= 1 - LRDecay;
-        m_nbdWidth     *= 1 - NbdWidthDecay;
+        m_learningRate *= 1 - m_lrDecay;
+        m_nbdWidth     *= 1 - m_nbdWidthDecay;
     }
 
     template <typename T, size_t IS, size_t OSX, size_t OSY>
@@ -64,7 +68,7 @@ namespace pipe
     
     template <typename T, size_t InputSize, size_t OSX, size_t OSY>
     template <typename Container>
-    T kohonen<T, IS, OSX, OSY>::euclidean_distance_squared(const Container& x, const Container& y) const
+    T kohonen<T, InputSize, OSX, OSY>::euclidean_distance_squared(const Container& x, const Container& y) const
     {
         // Euclidean distance = sqrt(sum((x_i - y_i)^2))
         T sum = 0;
@@ -82,12 +86,14 @@ namespace pipe
         return std::exp(-euclidean_distance_squared(j, &m_winningNeuron) / (2 * std::pow(m_nbdWidth, 2)));
     }
     
-    template <typename T, size_t IS, size_t OSX, size_t OSY>
-    void kohonen<T, IS, OSX, OSY>::adjust_weight()
+    template <typename T, size_t IS, size_t OutputSizeX, size_t OutputSizeY>
+    void kohonen<T, IS, OutputSizeX, OutputSizeY>::adjust_weight()
     {
         for (auto i = 0; i < OutputSizeX; ++i)
         {
-            for (auto j = 0; j < OutputSizeY
+            for (auto j = 0; j < OutputSizeY; ++j)
+            {
+            }
         }
     }
 }
