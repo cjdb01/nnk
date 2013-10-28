@@ -85,24 +85,30 @@ namespace pipe
     }
     
     template <typename T, size_t IS, size_t OSX, size_t OSY>
-    template <typename OuputIterator>
-    T kohonen<T, IS, OSX, OSY>::h(const OuputIterator& j) const
+    template <typename OutputIterator>
+    T kohonen<T, IS, OSX, OSY>::h(const OutputIterator& j) const
     {
         std::exp(-euclidean_distance_squared(j, m_winningNeuron)/2 * square(m_nbdWidth));
     }
     
     template <typename T, size_t InputSize, size_t OutputSizeX, size_t OutputSizeY>
-    void kohonen<T, IS, OSX, OSY>::adjust_weight()
+    void kohonen<T, InputSize, OutputSizeX, OutputSizeY>::adjust_weight()
     {
-        for (auto it = m_weight.begin(); it != m_weight.end(); ++it)
+        for (size_t i = 0; i < InputSize; ++i)
         {
-            for (size_t i = 0; i < OutputSizeX; ++i)
+            for (size_t j = 0; j < OutputSizeX; ++j)
             {
-                for (size_t j = 0; j < OutputSizeY; ++j)
+                for (size_t k = 0; k < OutputSizeY; ++k)
                 {
-                    (*it)[i][j] += m_learningRate * h((*it)[i][j]) * (m_input[i] - (*it)[i][j]);
+                    m_weight[i][j][k] += m_learningRate * h(m_output[i][j]) * (m_input[i] - m_weight[i][j][k]);
                 }
             }
         }
+    }
+    
+    template <typename T, size_t IS, size_t OSX, size_t OSY>
+    void kohonen<T, IS, OSX, OSY>::compete()
+    {
+        
     }
 }

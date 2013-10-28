@@ -102,8 +102,8 @@ namespace pipe
         template <typename Container>
         inline T euclidean_distance_squared(const Container& x, const Container& y) const;
 
-		template <typename OuputIterator>
-        T h(const input_type& j) const;
+		template <typename OutputIterator>
+        T h(const OutputIterator& j) const;
 
         inline void decay();
         void adjust_weight();
