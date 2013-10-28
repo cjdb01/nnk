@@ -61,14 +61,14 @@
 namespace pipe
 {
     // The default template is set for run 1
-    template <typename T = double, size_t InputSize = 2, size_t OutputSizeX = 4, size_t OutputSizeY = 2>
+    template <typename T = double, size_t InputSize = 2,
+              size_t OutputSizeX = 4, size_t OutputSizeY = 2>
     class kohonen
     {
     private:
         // Some important types
-        typedef std::array<T, InputSize>                            input_type;
-        typedef std::array<std::array<T, OutputSizeY>, OutputSizeX> output_type;
-		typedef std::array<output_type, InputSize>                  weight_type;
+        typedef std::array<T, InputSize>                                      input_type;
+        typedef std::array<std::array<input_type, OutputSizeY>, OutputSizeX>  output_type;
         typedef std::chrono::system_clock clock;
         
         // State data
@@ -86,7 +86,6 @@ namespace pipe
         
         // Neural net
         std::vector<input_type> m_input;
-		weight_type m_weight;
         output_type m_output;
         
         // Private member functions

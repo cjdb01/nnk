@@ -1,0 +1,6 @@
+for (int j = 0; j < OutputSize; j++)
+{
+    to_vector(j, vec);
+    fprintf(file, "%lf %lf\n", w[j][0], w[j][1]);
+    printf("(%d, %d) %.5f %.5f\n", (int)vec[0], (int)vec[1], w[j][0], w[j][1]);
+}
