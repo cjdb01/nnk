@@ -74,7 +74,7 @@ namespace pipe
         // State data
         T m_learningRate;
         T m_nbdWidth;
-        input_type* m_winningNeuron;
+        T* m_winningNeuron;
         
         // Constant data
         const T m_lrDecay;

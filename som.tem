@@ -106,9 +106,21 @@ namespace pipe
         }
     }
     
-    template <typename T, size_t IS, size_t OSX, size_t OSY>
-    void kohonen<T, IS, OSX, OSY>::compete()
+    template <typename T, size_t InputSize, size_t OutputSizeX, size_t OutputSizeY>
+    void kohonen<T, InputSize, OutputSizeX, OutputSizeY>::compete()
     {
-        
+        for (size_t i = 0; i < InputSize; ++i)
+        {
+            T sum = static_cast<T>(0);
+            for (size_t j = 0; j < OutputSizeX; ++j)
+            {
+                for (size_t k = 0; k < OutputSizeY; ++k)
+                {
+                    sum += m_weight[i][j][k] - m_input[i];
+                }
+            }
+            
+            
+        }
     }
 }
