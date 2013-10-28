@@ -1,6 +1,9 @@
 #include "som.h"
 
+#include <fstream>
+
 int main()
 {
-    pipe::kohonen<double>();
+	std::ifstream in("data24.txt", std::ios::in);
+    pipe::kohonen<> k(in);
 }

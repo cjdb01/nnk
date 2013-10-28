@@ -68,6 +68,7 @@ namespace pipe
         // Some important types
         typedef std::array<T, InputSize>                            input_type;
         typedef std::array<std::array<T, OutputSizeY>, OutputSizeX> output_type;
+		typedef std::array<output_type, InputSize>                  weight_type;
         typedef std::chrono::system_clock clock;
         
         // State data
@@ -85,20 +86,31 @@ namespace pipe
         
         // Neural net
         std::vector<input_type> m_input;
-        std::vector<output_type> m_output;
+		weight_type m_weight;
+        output_type m_output;
         
         // Private member functions
-        template <typename Container = input_type>
-        T euclidean_distance_squared(const Container& x, const Container& y) const;
-        
-        T tiny_rand() const;
+
+		// euclidean_distance_squared
+		// Input: Two containers of the same type and size
+		// Output: The Euclidean distance squared
+		// Effects: Exception thrown if x.size() != y.size()
+		// Time complexity: Linear
+		//
+		// Note that this will iterate through all elements of the containers as though it were
+		// computing the Euclidean distance. The difference is that the square root part is omitted
+        template <typename Container>
+        inline T euclidean_distance_squared(const Container& x, const Container& y) const;
+
+		template <typename OuputIterator>
         T h(const input_type& j) const;
-        void decay();
+
+        inline void decay();
         void adjust_weight();
     public:
         // Constructors
-        kohonen(const T& initial_lr = 0.1, const T& lr_decay = 0.001, const T& initial_nbd_width = 2.0, const T& nbd_width_decay = 0.001, const T& min_weight = -0.1, const T& max_weight = 0.1);
-        kohonen(std::istream& in, const T& initial_lr = 0.1, const T& lr_decay = 0.001, const T& initial_nbd_width = 2.0, const T& nbd_width_decay = 0.001, const T& min_weight = -0.1, const T& max_weight = 0.1);
+        kohonen(const T& initial_lr = 0.1, const T& lr_decay = 0.001, const T& initial_nbd_width = 2.0, const T& nbd_width_decay = 0.001);
+        kohonen(std::istream& in, const T& initial_lr = 0.1, const T& lr_decay = 0.001, const T& initial_nbd_width = 2.0, const T& nbd_width_decay = 0.001);
         
         // Epoch run
         void run(const int epochs = 5000);

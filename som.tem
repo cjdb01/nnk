@@ -22,34 +22,41 @@ namespace pipe
      * name instead of a shorthand equivalent. If you don't need to know about it, its name is
      * meaningless anyway!
      */
-    template <typename T, size_t IS, size_t OSX, size_t OSY>
-    kohonen<T, IS, OSX, OSY>::kohonen(const T& ilr, const T& lr_decay, const T& inbd_width, const T& nbd_width_decay, const T& min_weight, const T& max_weight)
-     : m_learningRate(ilr), m_nbdWidth(inbd_width), m_lrDecay(lr_decay), m_nbdWidthDecay(nbd_width_decay), m_random(clock::now().time_since_epoch().count()), m_distribute(min_weight, max_weight) {}
-
-    template <typename T, size_t IS, size_t OSX, size_t OSY>
-    kohonen<T, IS, OSX, OSY>::kohonen(std::istream& in, const T& ilr, const T& lr_decay, const T& inbd_width, const T& nbd_width_decay, const T& min_weight, const T& max_weight) : kohonen(ilr, lr_decay, inbd_width, nbd_width_decay, min_weight, max_weight)
+    template <typename T> inline T square(T x) { return x*x; }
+     
+    template <typename T, size_t IS, size_t OSX, size_t OSY> kohonen<T, IS, OSX, OSY>::
+    kohonen(const T& lr, const T& lr_decay, const T& nbd_width, const T& nbd_width_decay)
+     : m_learningRate(lr),  m_nbdWidth(nbd_width), m_winningNeuron(nullptr),
+       m_lrDecay(lr_decay), m_nbdWidthDecay(nbd_width_decay),
+       m_random(clock::now().time_since_epoch().count()), m_distribute(-0.1, 0.1)
     {
-        input_type a;
-        output_type b;
-
-        while (in.eof() == false)
+        // Set up the weights (common for all constructors!)
+        for (auto i = m_weight.begin(); i != m_weight.end(); ++i)
         {
-            for (auto it = a.begin() : a.end())
+            for (auto j = i->begin(); j != i->end(); ++j)
             {
-                in >> *it;
-                in.get();
-            }
-
-            for (auto i = b.begin() : b.end())
-            {
-                for (auto j = i.begin() : i.end())
+                for (auto k = j->begin(); k != j->end(); ++k)
                 {
-                    *j = tiny_rand();
+                    *k = m_distribute(m_random);
                 }
             }
-
-            m_input.push_back(a);
-            m_output.push_back(b);
+        }
+    }
+    
+    template <typename T, size_t IS, size_t OSX, size_t OSY> kohonen<T, IS, OSX, OSY>::
+    kohonen(std::istream& in,
+            const T& lr, const T& lr_decay, const T& nbd_width, const T& nbd_width_decay)
+     : kohonen(lr, lr_decay, nbd_width, nbd_width_decay)
+    {
+        input_type input;
+        while (in.eof() == false)
+        {
+            for (typename input_type::iterator it = input.begin(); it != input.end(); ++it)
+            {
+                in >> *it;
+            }
+            
+            m_input.push_back(input);
         }
     }
     
@@ -57,42 +64,44 @@ namespace pipe
     void kohonen<T, IS, OSX, OSY>::decay()
     {
         m_learningRate *= 1 - m_lrDecay;
-        m_nbdWidth     *= 1 - m_nbdWidthDecay;
-    }
-
-    template <typename T, size_t IS, size_t OSX, size_t OSY>
-    T kohonen<T, IS, OSX, OSY>::tiny_rand() const
-    {
-        return m_distribute(m_random);
+        m_nbdWidth *= 1 - m_nbdWidthDecay;
     }
     
-    template <typename T, size_t InputSize, size_t OSX, size_t OSY>
+    template <typename T, size_t IS, size_t OSX, size_t OSY>
     template <typename Container>
-    T kohonen<T, InputSize, OSX, OSY>::euclidean_distance_squared(const Container& x, const Container& y) const
+    T kohonen<T, IS, OSX, OSY>::euclidean_distance_squared(const Container& x,
+                                                           const Container& y) const
     {
-        // Euclidean distance = sqrt(sum((x_i - y_i)^2))
-        T sum = 0;
-        for (auto i = 0; i < InputSize; ++i)
+        if (x.size() != y.size())
+            throw "x.size() != y.size()"; // Only reason why this function isn't pure :(
+            
+        T size = static_cast<T>(0); // 0 is an int, T might not be an int!
+        for (auto i = x.cbegin(), j = y.cbegin(); i != x.cend(); ++i, ++j)
         {
-            sum += std::pow(x[i] - y[i], 2);
+            size += square(*i + *j);
         }
         
-        return sum;
+        return size;
     }
     
     template <typename T, size_t IS, size_t OSX, size_t OSY>
-    T kohonen<T, IS, OSX, OSY>::h(const input_type& j) const
+    template <typename OuputIterator>
+    T kohonen<T, IS, OSX, OSY>::h(const OuputIterator& j) const
     {
-        return std::exp(-euclidean_distance_squared(j, &m_winningNeuron) / (2 * std::pow(m_nbdWidth, 2)));
+        std::exp(-euclidean_distance_squared(j, m_winningNeuron)/2 * square(m_nbdWidth));
     }
     
-    template <typename T, size_t IS, size_t OutputSizeX, size_t OutputSizeY>
-    void kohonen<T, IS, OutputSizeX, OutputSizeY>::adjust_weight()
+    template <typename T, size_t InputSize, size_t OutputSizeX, size_t OutputSizeY>
+    void kohonen<T, IS, OSX, OSY>::adjust_weight()
     {
-        for (auto i = 0; i < OutputSizeX; ++i)
+        for (auto it = m_weight.begin(); it != m_weight.end(); ++it)
         {
-            for (auto j = 0; j < OutputSizeY; ++j)
+            for (size_t i = 0; i < OutputSizeX; ++i)
             {
+                for (size_t j = 0; j < OutputSizeY; ++j)
+                {
+                    (*it)[i][j] += m_learningRate * h((*it)[i][j]) * (m_input[i] - (*it)[i][j]);
+                }
             }
         }
     }
