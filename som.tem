@@ -56,7 +56,7 @@ kohonen(std::istream& is, const T& lr_decay, const T& nbdw_decay, const T& lr, c
     m_random(clock::now().time_since_epoch().count()), m_distribution(-0.1, 0.1)
 {
     // Randomise the weights
-    for (auto it = m_input.begin(); it != m_input.end(); ++it)
+    for (auto it = m_output.begin(); it != m_output.end(); ++it)
     {
         for (auto jt = it->begin(); jt != it->end(); ++jt)
         {
@@ -169,7 +169,7 @@ inline void kohonen<T, I, X, Y, Area>::print() const
     
     for (size_t i = 0; i < Area; ++i)
     {
-        std::cout << '(' << i % Y << ',' << i % X << ')' << '\t';
+        std::cout << '(' << i / X << ',' << i % X << ')' << '\t';
         for (auto cit = m_output[i].cbegin(); cit != m_output[i].cend(); ++cit)
         {
             std::cout << *cit << " ";
