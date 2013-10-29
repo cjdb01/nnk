@@ -1,116 +1,19 @@
-/*
- * Christopher Di Bella <chrisdb@cse.unsw.edu.au>
- *
- * 1 November, 2013
- *
- * som.h
- * The self-organising map implementation.
- *
- * Coding conventions documented in som.h.
- *
- * Note that this is a C++11 file, subject to GCC 4.7.2, as on the CSE machines
- *
- * Copyright (c) Christopher 2013, under the MIT License.
- * All rights reserved.
- */
- 
-namespace pipe
+
+
+
+template <typename T, size_t I, size_t X, size_t Y, size_t Area>
+std::ostream operator<<(std::ostream& os, kohonen<T, I, X, Y, A> k)
 {
-    /*
-     * To save space, unused template parameters will be referred to by only the letters
-     * that start each word. Template parameters that are actually used will have a meaningful
-     * name instead of a shorthand equivalent. If you don't need to know about it, its name is
-     * meaningless anyway!
-     */
-    template <typename T> inline T square(T x) { return x*x; }
-     
-    template <typename T, size_t IS, size_t OSX, size_t OSY> kohonen<T, IS, OSX, OSY>::
-    kohonen(const T& lr, const T& lr_decay, const T& nbd_width, const T& nbd_width_decay)
-     : m_learningRate(lr),  m_nbdWidth(nbd_width), m_winningNeuron(nullptr),
-       m_lrDecay(lr_decay), m_nbdWidthDecay(nbd_width_decay), m_outputSize(OSX*OSY),
-       m_random(clock::now().time_since_epoch().count()), m_distribute(-0.1, 0.1)
+    for (size_t i = 0; i < Area; ++i)
     {
-        // Set up the weights (common for all constructors!)
-        for (auto i = m_output.begin(); i != m_output.end(); ++i)
+        os << '(' << i/X << ',' << i/Y << ')' << '\t';
+        for (auto cit = k.m_output[i].cbegin(); cit != k.m_output.cend(); ++cit)
         {
-            for (auto j = i->begin(); j != i->end(); ++j)
-            {
-                *j = m_distribute(m_random);
-            }
-        }
-    }
-    
-    template <typename T, size_t IS, size_t OSX, size_t OSY> kohonen<T, IS, OSX, OSY>::
-    kohonen(std::istream& in,
-            const T& lr, const T& lr_decay, const T& nbd_width, const T& nbd_width_decay)
-     : kohonen(lr, lr_decay, nbd_width, nbd_width_decay)
-    {
-        input_type input;
-        while (in.eof() == false)
-        {
-            for (typename input_type::iterator it = input.begin(); it != input.end(); ++it)
-            {
-                in >> *it;
-            }
-            
-            m_input.push_back(input);
-        }
-    }
-    
-    template <typename T, size_t IS, size_t OSX, size_t OSY>
-    void kohonen<T, IS, OSX, OSY>::decay()
-    {
-        m_learningRate *= 1 - m_lrDecay;
-        m_nbdWidth *= 1 - m_nbdWidthDecay;
-    }
-    
-    template <typename T, size_t IS, size_t OSX, size_t OSY>
-    template <typename Container>
-    T kohonen<T, IS, OSX, OSY>::euclidean_distance_squared(const Container& x,
-                                                           const Container& y) const
-    {
-        if (x.size() != y.size())
-            throw "x.size() != y.size()"; // Only reason why this function isn't pure :(
-            
-        T size = static_cast<T>(0); // 0 is an int, T might not be an int!
-        for (auto i = x.cbegin(), j = y.cbegin(); i != x.cend(); ++i, ++j)
-        {
-            size += square(*i + *j);
+            os << *cit;
         }
         
-        return size;
+        os << std::endl;
     }
     
-    template <typename T, size_t IS, size_t OSX, size_t OSY>
-    template <typename OutputIterator>
-    T kohonen<T, IS, OSX, OSY>::h(const OutputIterator& j) const
-    {
-        std::exp(-euclidean_distance_squared(j, m_winningNeuron)/2 * square(m_nbdWidth));
-    }
-    
-    template <typename T, size_t InputSize, size_t OSX, size_t OSY>
-    void kohonen<T, InputSize, OSX, OSY>::adjust_weight()
-    {
-        for (size_t i = 0; i < m_outputSize; ++i)
-        {
-            for (size_t j = 0; j < InputSize; ++j)
-            {
-                m_output[i][j] += m_learningRate * h(m_output[i]) * (m_input[j] - m_output[i][j]);
-            }
-        }
-    }
-    
-    template <typename T, size_t InputSize, size_t OSX, size_t OSY>
-    void kohonen<T, InputSize, OSX, OSY>::compete()
-    {
-        std::vector<T> m;
-        for (size_t i = 0; i < m_outputSize; ++i)
-        {
-            T sum = static_cast<T>(0);
-            for (size_t j = 0; j < InputSize; ++j)
-            {
-                sum += (m_output[i][j] - m_input[j]);
-            }
-        }
-    }
+    return os;
 }

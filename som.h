@@ -49,72 +49,43 @@
  * Copyright (c) Christopher 2013, under the MIT License.
  * All rights reserved.
  */
+
 #include <algorithm>
 #include <array>
 #include <chrono>
-#include <cmath>
-#include <cstdint>
 #include <iostream>
 #include <random>
 #include <vector>
 
-namespace pipe
+template <typename T, size_t InputSize, size_t X, size_t Y, size_t Area = X * Y>
+class kohonen
 {
-    // The default template is set for run 1
-    template <typename T = double, size_t InputSize = 2,
-              size_t OutputSizeX = 4, size_t OutputSizeY = 2>
-    class kohonen
-    {
-    private:
-        // Some important types
-        typedef std::array<T, InputSize>                           input_type;
-        typedef std::array<input_type, OutputSizeX * OutputSizeY>  output_type;
-        typedef std::chrono::system_clock clock;
-        
-        // State data
-        T m_learningRate;
-        T m_nbdWidth;
-        T* m_winningNeuron;
-        
-        // Constant data
-        const T m_lrDecay;
-        const T m_nbdWidthDecay;
-        const size_t m_outputSize;
-        // Random engine
-        std::default_random_engine        m_random;
-        std::uniform_real_distribution<T> m_distribute;
-        
-        // Neural net
-        std::vector<input_type> m_input;
-        output_type m_output;
-        
-        // Private member functions
-
-		// euclidean_distance_squared
-		// Input: Two containers of the same type and size
-		// Output: The Euclidean distance squared
-		// Effects: Exception thrown if x.size() != y.size()
-		// Time complexity: Linear
-		//
-		// Note that this will iterate through all elements of the containers as though it were
-		// computing the Euclidean distance. The difference is that the square root part is omitted
-        template <typename Container>
-        inline T euclidean_distance_squared(const Container& x, const Container& y) const;
-
-		template <typename OutputIterator>
-        T h(const OutputIterator& j) const;
-
-        inline void decay();
-        void adjust_weight();
-    public:
-        // Constructors
-        kohonen(const T& initial_lr = 0.1, const T& lr_decay = 0.001, const T& initial_nbd_width = 2.0, const T& nbd_width_decay = 0.001);
-        kohonen(std::istream& in, const T& initial_lr = 0.1, const T& lr_decay = 0.001, const T& initial_nbd_width = 2.0, const T& nbd_width_decay = 0.001);
-        
-        // Epoch run
-        void run(const int epochs = 5000);
-        void compete();
-    };
-}
+private:
+    // Some important typedefs
+    typedef std::array<T, InputSize>     input_type;
+    typedef std::array<input_type, Area> output_type;
+    typedef std::chrono::system_clock    clock;
+    
+    // Data structures
+    input_type  m_input;
+    output_type m_output;
+    
+    // Constants
+    const T m_lrDecay;
+    const T m_nbdWidthDecay;
+    
+    // Variable data
+    T m_learningRate;
+    T m_nbdWidth;
+    
+    // Random number generator
+    std::default_random_engine m_random;
+    std::uniform_real_distribution<T> m_distribution;
+public:
+    kohonen(std::istream& is, const T& lr_decay, const T& nbd_width_decay, const T& lr,
+            const T& nbd_width);
+            
+    friend std::ostream& operator<<(std::ostream& os, kohonen<T, InputSize, X, Y, Area> k);
+};
 
 #include "som.tem"
