@@ -6,4 +6,5 @@ int main()
 {
 	std::ifstream in("data24.txt", std::ios::in);
     pipe::kohonen<> k(in);
+    k.compete();
 }

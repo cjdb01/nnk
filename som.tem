@@ -27,7 +27,7 @@ namespace pipe
     template <typename T, size_t IS, size_t OSX, size_t OSY> kohonen<T, IS, OSX, OSY>::
     kohonen(const T& lr, const T& lr_decay, const T& nbd_width, const T& nbd_width_decay)
      : m_learningRate(lr),  m_nbdWidth(nbd_width), m_winningNeuron(nullptr),
-       m_lrDecay(lr_decay), m_nbdWidthDecay(nbd_width_decay),
+       m_lrDecay(lr_decay), m_nbdWidthDecay(nbd_width_decay), m_outputSize(OSX*OSY),
        m_random(clock::now().time_since_epoch().count()), m_distribute(-0.1, 0.1)
     {
         // Set up the weights (common for all constructors!)
@@ -88,32 +88,28 @@ namespace pipe
         std::exp(-euclidean_distance_squared(j, m_winningNeuron)/2 * square(m_nbdWidth));
     }
     
-    template <typename T, size_t InputSize, size_t OutputSizeX, size_t OutputSizeY>
-    void kohonen<T, InputSize, OutputSizeX, OutputSizeY>::adjust_weight()
+    template <typename T, size_t InputSize, size_t OSX, size_t OSY>
+    void kohonen<T, InputSize, OSX, OSY>::adjust_weight()
     {
-        for (size_t i = 0; i < InputSize; ++i)
+        for (size_t i = 0; i < m_outputSize; ++i)
         {
-            for (size_t j = 0; j < OutputSizeX; ++j)
+            for (size_t j = 0; j < InputSize; ++j)
             {
-                for (size_t k = 0; k < OutputSizeY; ++k)
-                {
-                    m_weight[i][j][k] += m_learningRate * h(m_output[i][j]) * (m_input[i] - m_weight[i][j][k]);
-                }
+                m_output[i][j] += m_learningRate * h(m_output[i]) * (m_input[j] - m_output[i][j]);
             }
         }
     }
     
-    template <typename T, size_t InputSize, size_t OutputSizeX, size_t OutputSizeY>
-    void kohonen<T, InputSize, OutputSizeX, OutputSizeY>::compete()
+    template <typename T, size_t InputSize, size_t OSX, size_t OSY>
+    void kohonen<T, InputSize, OSX, OSY>::compete()
     {
-        for (auto i = m_weight.begin(); i != m_weight.end(); ++i)
+        std::vector<T> m;
+        for (size_t i = 0; i < m_outputSize; ++i)
         {
-            for (auto j = i->begin(); j != i->end(); ++j)
+            T sum = static_cast<T>(0);
+            for (size_t j = 0; j < InputSize; ++j)
             {
-                for (auto k = j->begin(); k != j->end(); ++k)
-                {
-                    
-                }
+                sum += (m_output[i][j] - m_input[j]);
             }
         }
     }

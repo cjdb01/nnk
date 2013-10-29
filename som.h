@@ -67,8 +67,8 @@ namespace pipe
     {
     private:
         // Some important types
-        typedef std::array<T, InputSize>                                      input_type;
-        typedef std::array<std::array<input_type, OutputSizeY>, OutputSizeX>  output_type;
+        typedef std::array<T, InputSize>                           input_type;
+        typedef std::array<input_type, OutputSizeX * OutputSizeY>  output_type;
         typedef std::chrono::system_clock clock;
         
         // State data
@@ -79,7 +79,7 @@ namespace pipe
         // Constant data
         const T m_lrDecay;
         const T m_nbdWidthDecay;
-        
+        const size_t m_outputSize;
         // Random engine
         std::default_random_engine        m_random;
         std::uniform_real_distribution<T> m_distribute;
@@ -113,6 +113,7 @@ namespace pipe
         
         // Epoch run
         void run(const int epochs = 5000);
+        void compete();
     };
 }
 
