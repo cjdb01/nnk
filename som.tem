@@ -1,13 +1,156 @@
+/*
+ * Christopher Di Bella
+ * <chrisdb@cse.unsw.edu.au>
+ *
+ * 1 November, 2013
+ *
+ * som.tem
+ * The implementation file for the kohonen class
+ *
+ * `#include ...' is forbidden in such files
+ * Reason being that while users don't need to care about how kohonen is implemented, they
+ * have a right to know what other headers they are implicitly including in *their* code!
+ */
 
-
-
-template <typename T, size_t I, size_t X, size_t Y, size_t Area>
-std::ostream operator<<(std::ostream& os, kohonen<T, I, X, Y, A> k)
+namespace maths
 {
+    // Square function
+    // Takes an input x and returns x^2 as output
+    // Pure function
+    // Faster and clearer than std::pow
+    template <typename T>
+    inline T square(const T& x)
+    {
+        return x*x;
+    }
+    
+    // Euclidean distance
+    // Template input: container<type>
+    // Input:          Two containers of the same type. Must support forward iterators
+    // Output:         A scalar that is the euclidean distance of the containers
+    // Pre-conditions: x.size() == y.size(),
+    //                 Container must have a member function size(),
+    //                 T must support conversion from its native type double
+    // Effects:        Exception thrown if x.size() != y.size()
+    template <typename Container>
+    inline double euclidean_distance(const Container& x, const Container& y)
+    {
+        if (x.size() != y.size())
+        {
+            throw "euclidean_distance error: x.size() != y.size()";
+        }
+        
+        double size = 0;
+        for (auto cit = x.cbegin(), cjt = y.cbegin(); cit != x.cend(); ++cit, ++cjt)
+        {
+            size += square(*cit + *cjt);
+        }
+        
+        return std::sqrt(size);
+    }
+}
+
+template <typename T, size_t I, size_t X, size_t Y, size_t A> inline kohonen<T, I, X, Y, A>::
+kohonen(std::istream& is, const T& lr_decay, const T& nbdw_decay, const T& lr, const T& nbdw) :
+    m_lrDecay(lr_decay), m_nbdWidthDecay(nbdw_decay), m_learningRate(lr), m_nbdWidth(nbdw),
+    m_random(clock::now().time_since_epoch().count()), m_distribution(-0.1, 0.1)
+{
+    // Randomise the weights
+    for (auto it = m_input.begin(); it != m_input.end(); ++it)
+    {
+        for (auto jt = it->begin(); jt != it->end(); ++jt)
+        {
+            *jt = m_distribution(m_random);
+        }
+    }
+    
+    // Read in the input values
+    input_type in;
+    while (is.eof() == false)
+    {
+        for (auto it = in.begin(); it != in.end(); ++it)
+        {
+            is >> *it;
+        }
+        
+        m_input.push_back(in);
+    }
+}
+
+template <typename T, size_t I, size_t X, size_t Y, size_t A>
+inline void kohonen<T, I, X, Y, A>::train(const size_t epochs)
+{
+    for (size_t i = 0; i < epochs; ++i)
+    {
+        // To prevent any bias, we need to shuffle the contents of the vector
+        std::random_shuffle(m_input.begin(), m_input.end());
+        
+        // During each epoch, we need to present every vector
+        for (auto cit = m_input.begin(); cit != m_input.end(); ++cit)
+        {
+            auto winner = compete(cit);
+            adjust_neighbours(winner);
+        }
+        
+        decay();
+    }
+}
+
+template <typename T, size_t Input, size_t X, size_t Y, size_t Area>
+inline typename kohonen<T, Input, X, Y, Area>::output_iterator
+kohonen<T, Input, X, Y, Area>::compete(const_input_iterator& x)
+{    
+    // m[j] = sqrt (sum over i: (w[i][j] - x[i])^2)
+    T sum = static_cast<T>(0);
+    std::array<T, Area> m;
+    for (size_t i = 0; i < Area; ++i)
+    {
+        for (size_t j = 0; j < Input; ++j)
+        {
+            sum += maths::square(m_output[i][j] - (*x)[j]);
+        }
+        
+        m[i] = std::sqrt(sum);
+    }
+    
+    return std::min_element(m.begin(), m.end()) - m.begin() + m_output.begin();
+}
+
+template <typename T, size_t Input, size_t X, size_t Y, size_t A>
+inline void kohonen<T, Input, X, Y, A>::adjust_neighbours(const output_iterator& winner)
+{
+    for (auto it = m_output.begin(); it != m_output.end(); ++it)
+    {
+        for (size_t j = 0; j < Input; ++j)
+        {
+            (*it)[j] += m_learningRate * h(*it, *winner);
+        }
+    }
+}
+
+template <typename T, size_t I, size_t X, size_t Y, size_t A>
+inline T kohonen<T, I, X, Y, A>::h(const input_type& input, const input_type& winner)
+{
+    return std::exp(-maths::square(maths::euclidean_distance(input, winner))) / (2 * maths::square(m_nbdWidth));
+}
+
+template <typename T, size_t I, size_t X, size_t Y, size_t A>
+inline void kohonen<T, I, X, Y, A>::decay()
+{
+    m_learningRate *= (1 - m_lrDecay);
+    m_nbdWidth *= (1 - m_nbdWidthDecay);
+}
+/*
+template <typename T, size_t I, size_t X, size_t Y, size_t Area>
+inline std::ostream operator<<(std::ostream& os, kohonen<T, I, X, Y, Area>& k)
+{
+    os << std::fixed;
+    os << std::setprecision(5);
+    
     for (size_t i = 0; i < Area; ++i)
     {
         os << '(' << i/X << ',' << i/Y << ')' << '\t';
-        for (auto cit = k.m_output[i].cbegin(); cit != k.m_output.cend(); ++cit)
+        for (auto cit = k.m_output[i].cbegin(); cit != k.m_output[i].cend(); ++cit)
         {
             os << *cit;
         }
@@ -16,4 +159,22 @@ std::ostream operator<<(std::ostream& os, kohonen<T, I, X, Y, A> k)
     }
     
     return os;
+}*/
+
+template <typename T, size_t I, size_t X, size_t Y, size_t Area>
+inline void kohonen<T, I, X, Y, Area>::print() const
+{
+    std::cout << std::fixed;
+    std::cout << std::setprecision(5);
+    
+    for (size_t i = 0; i < Area; ++i)
+    {
+        std::cout << '(' << i % Y << ',' << i % X << ')' << '\t';
+        for (auto cit = m_output[i].cbegin(); cit != m_output[i].cend(); ++cit)
+        {
+            std::cout << *cit << " ";
+        }
+        
+        std::cout << std::endl;
+    }
 }

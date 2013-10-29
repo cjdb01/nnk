@@ -9,23 +9,29 @@ int main()
     const type lr = 0.1;
     const type nbdw = 2.0;
     
-    kohonen<tpye, 2, 4, 2> run1(std::cin, lr_decay, nbdw_decay, lr, nbdw);
-    kohonen<type, 2, 4, 4> run2(std::cin, lr_decay, nbdw_decay, lr, nbdw);
-    kohonen<type, 2, 2, 3> run3(std::cin, lr_decay, nbdw_decay, lr, nbdw);
+    kohonen<type, 2, 4, 2> run1(std::cin, lr_decay, nbdw_decay, lr, nbdw);
+    //kohonen<type, 2, 4, 4> run2(std::cin, lr_decay, nbdw_decay, lr, nbdw);
+    /*kohonen<type, 2, 2, 3> run3(std::cin, lr_decay, nbdw_decay, lr, nbdw);
     kohonen<type, 2, 4, 2> run4(std::cin, lr_decay, nbdw_decay, lr, nbdw);
-    kohonen<type, 2, 1, 1> run5(std::cin, lr_decay, nbdw_decay, lr, nbdw);
+    kohonen<type, 2, 1, 1> run5(std::cin, lr_decay, nbdw_decay, lr, nbdw);*/
     
-    run1.train();
-    run2.train();
-    run3.train();
-    run4.train();
-    run5.train();
+    run1.train(5000);
+    //run2.train(5000);
+    /*run3.train(5000);
+    run4.train(5000);
+    run5.train(5000);*/
     
-    std::cout << run1 << std::endl;
+    /*std::cout << run1 << std::endl;
     std::cout << run2 << std::endl;
     std::cout << run3 << std::endl;
     std::cout << run4 << std::endl;
-    std::cout << run5 << std::endl;
+    std::cout << run5 << std::endl;*/
+    
+    run1.print();
+    /*run2.print();
+    run3.print();
+    run4.print();
+    run5.print();*/
     
     return EXIT_SUCCESS; // Even though this is C++, I still like to do this :)
 }

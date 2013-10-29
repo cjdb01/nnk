@@ -53,9 +53,18 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <random>
 #include <vector>
+
+
+/*/ Forward declarations
+template <typename T, size_t I, size_t X, size_t Y, size_t A> class kohonen;
+
+template <typename T, size_t I, size_t X, size_t Y, size_t A>
+std::ostream operator<<(std::ostream& os, const kohonen<T, I, X, Y, A>& k);*/
 
 template <typename T, size_t InputSize, size_t X, size_t Y, size_t Area = X * Y>
 class kohonen
@@ -66,8 +75,11 @@ private:
     typedef std::array<input_type, Area> output_type;
     typedef std::chrono::system_clock    clock;
     
+    typedef typename std::vector<input_type>::iterator  const_input_iterator;
+    typedef typename output_type::iterator                   output_iterator;
+    
     // Data structures
-    input_type  m_input;
+    std::vector<input_type> m_input;
     output_type m_output;
     
     // Constants
@@ -81,11 +93,21 @@ private:
     // Random number generator
     std::default_random_engine m_random;
     std::uniform_real_distribution<T> m_distribution;
+    
+    // The three processes of SOMs
+    output_iterator compete(const_input_iterator& input);
+    void adjust_neighbours(const output_iterator& winner);
+    
+    // Some helper functions
+    T h(const input_type& input, const input_type& winner);
+    void decay();
 public:
     kohonen(std::istream& is, const T& lr_decay, const T& nbd_width_decay, const T& lr,
             const T& nbd_width);
             
-    friend std::ostream& operator<<(std::ostream& os, kohonen<T, InputSize, X, Y, Area> k);
+    void train(const size_t epochs);
+    
+    void print() const;
 };
 
 #include "som.tem"
