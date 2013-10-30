@@ -1,4 +1,4 @@
-#include "som.h"
+#include "som.hpp"
 #include <cstdlib>
 #include <fstream>
 
