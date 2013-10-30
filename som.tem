@@ -113,7 +113,23 @@ kohonen<T, Input, X, Y, Area>::compete(const_input_iterator& x)
         m[i] = std::sqrt(sum);
     }
     
-    return std::min_element(m.begin(), m.end()) - m.begin() + m_output.begin();
+	return find_min_element(m);
+}
+
+template <typename T, size_t Input, size_t X, size_t Y, size_t Area>
+inline typename kohonen<T, Input, X, Y, Area>::output_iterator
+kohonen<T, Input, X, Y, Area>::find_min_element(const std::array<T, Area>& m)
+{
+	size_t min = 0;
+	for (size_t i = 1; i < Area; ++i)
+	{
+		if (m[i] < m[min])
+		{
+			min = i;
+		}
+	}
+
+	return m_output.begin() + min;
 }
 
 template <typename T, size_t Input, size_t X, size_t Y, size_t A>
@@ -131,7 +147,7 @@ inline void kohonen<T, Input, X, Y, A>::adjust_neighbours(const output_iterator&
 template <typename T, size_t I, size_t X, size_t Y, size_t A>
 inline T kohonen<T, I, X, Y, A>::h(const input_type& input, const input_type& winner)
 {
-    return std::exp(-maths::square(maths::euclidean_distance(input, winner))) / (2 * maths::square(m_nbdWidth));
+    return std::exp(-maths::square(maths::euclidean_distance(input, winner)) / (2 * maths::square(m_nbdWidth)));
 }
 
 template <typename T, size_t I, size_t X, size_t Y, size_t A>
@@ -140,26 +156,6 @@ inline void kohonen<T, I, X, Y, A>::decay()
     m_learningRate *= (1 - m_lrDecay);
     m_nbdWidth *= (1 - m_nbdWidthDecay);
 }
-/*
-template <typename T, size_t I, size_t X, size_t Y, size_t Area>
-inline std::ostream operator<<(std::ostream& os, kohonen<T, I, X, Y, Area>& k)
-{
-    os << std::fixed;
-    os << std::setprecision(5);
-    
-    for (size_t i = 0; i < Area; ++i)
-    {
-        os << '(' << i/X << ',' << i/Y << ')' << '\t';
-        for (auto cit = k.m_output[i].cbegin(); cit != k.m_output[i].cend(); ++cit)
-        {
-            os << *cit;
-        }
-        
-        os << std::endl;
-    }
-    
-    return os;
-}*/
 
 template <typename T, size_t I, size_t X, size_t Y, size_t Area>
 inline void kohonen<T, I, X, Y, Area>::print() const

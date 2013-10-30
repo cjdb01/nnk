@@ -75,8 +75,8 @@ private:
     typedef std::array<input_type, Area> output_type;
     typedef std::chrono::system_clock    clock;
     
-    typedef typename std::vector<input_type>::iterator  const_input_iterator;
-    typedef typename output_type::iterator                   output_iterator;
+    typedef typename std::vector<input_type>::iterator  input_iterator;
+    typedef typename output_type::iterator              output_iterator;
     
     // Data structures
     std::vector<input_type> m_input;
@@ -95,8 +95,10 @@ private:
     std::uniform_real_distribution<T> m_distribution;
     
     // The three processes of SOMs
-    output_iterator compete(const_input_iterator& input);
-    void adjust_neighbours(const output_iterator& winner);
+    std::array<T, Area> compete(input_iterator& x);
+    output_iterator cooperate(const std::array<T, Area>& m);
+    void adapt(input_iterator& x, output_iterator& winner);
+    //void adjust_neighbours(const_input_iterator& x, const output_iterator& winner);
     
     // Some helper functions
     T h(const input_type& input, const input_type& winner);

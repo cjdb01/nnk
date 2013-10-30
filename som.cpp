@@ -32,12 +32,6 @@ int main()
     run4.train(5000);
     run5.train(5000);
     
-    /*std::cout << run1 << std::endl;
-    std::cout << run2 << std::endl;
-    std::cout << run3 << std::endl;
-    std::cout << run4 << std::endl;
-    std::cout << run5 << std::endl;*/
-    
     run1.print();
     std::cout << std::endl;
     run2.print();
