@@ -43,7 +43,7 @@ namespace maths
         double size = 0;
         for (auto cit = x.cbegin(), cjt = y.cbegin(); cit != x.cend(); ++cit, ++cjt)
         {
-            size += square(*cit + *cjt);
+            size += square(*cit - *cjt);
         }
         
         return std::sqrt(size);
@@ -97,31 +97,36 @@ inline void kohonen<T, I, X, Y, A>::train(const size_t epochs)
     }
 }
 
-template <typename T, size_t I, size_t X, size_t Y, size_t A>
-inline typename kohonen<T, I, X, Y, A>::output_iterator kohonen<T, I, X, Y, A>::cooperate(const std::array<T, A>& m)
-{
-    auto p = std::min_element(m.begin(), m.end());
-
-    return p - m.begin() + m_output.begin();
-}
-
 template <typename T, size_t Input, size_t X, size_t Y, size_t Area>
 inline std::array<T, Area> kohonen<T, Input, X, Y, Area>::compete(input_iterator& x)
 {
     std::array<T, Area> m;
-
+    
     for (size_t i = 0; i < Area; ++i)
     {
         T sum = 0;
         for (size_t j = 0; j < Input; ++j)
         {
-            sum += maths::square(m_output[i][j] - (*x)[j]);
+            sum += Y == 1 ? std::abs(m_output[i][j] - (*x)[j]) :
+                            maths::square(m_output[i][j] - (*x)[j]);
         }
 
         m[i] = sqrt(sum);
     }
 
     return m;
+}
+
+template <typename T, size_t I, size_t X, size_t Y, size_t A>
+inline typename kohonen<T, I, X, Y, A>::output_iterator
+kohonen<T, I, X, Y, A>::cooperate(const std::array<T, A>& m)
+{
+    auto p = std::min_element(m.begin(), m.end());
+    
+    // Since p is a random-access iterator, we can reduce it to an int and take advantage
+    // of m_output's iterators being random-access also, and therefore apply a little bit
+    // of `pointer arithmetic'!
+    return (p - m.begin()) + m_output.begin();
 }
 
 template <typename T, size_t I, size_t X, size_t Y, size_t A>

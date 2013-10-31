@@ -1,0 +1,4 @@
+set output "kohonen.png"
+set terminal png
+plot "ASED", "kohonen.out"
+exit
