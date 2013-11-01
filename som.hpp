@@ -59,13 +59,6 @@
 #include <random>
 #include <vector>
 
-
-/*/ Forward declarations
-template <typename T, size_t I, size_t X, size_t Y, size_t A> class kohonen;
-
-template <typename T, size_t I, size_t X, size_t Y, size_t A>
-std::ostream operator<<(std::ostream& os, const kohonen<T, I, X, Y, A>& k);*/
-
 template <typename T, size_t InputSize, size_t X, size_t Y, size_t Area = X * Y>
 class kohonen
 {
@@ -95,21 +88,72 @@ private:
     std::uniform_real_distribution<T> m_distribution;
     
     // The three processes of SOMs
+    /*
+     * Provides the competition phase
+     * Input: an arbitrary input vector
+     * Output: An array with the euclidean distances of the output neurons to the input vector
+     * Effects: Mutable arrays
+     *          Non-deterministic control flow
+     */
     std::array<T, Area> compete(input_iterator& x);
+    
+    /*
+     * Provides the cooperation phase
+     *
+     * Input: Array that is of the same output as compete
+     * Output: The location of the smallest output unit (not smallest element in the array)
+     * Effects: Output is misleading
+     */
     output_iterator cooperate(const std::array<T, Area>& m);
+    
+    /*
+     * Adapts the remaining neurons
+     * Input: An iterator to the current input vector
+     *        An iterator to the winning output unit
+     * Output: n/a
+     * Effects: outputs are modified
+     */
     void adapt(input_iterator& x, output_iterator& winner);
-    //void adjust_neighbours(const_input_iterator& x, const output_iterator& winner);
     
     // Some helper functions
     T h(const input_type& input, const input_type& winner);
-	output_iterator find_min_element(const std::array<T, Area>& m);
+	
+	/*
+	 * Applies the learning rate and neighbourhood width decays
+	 * Input: n/a
+	 * Output: n/a
+	 * Effects: m_learningRate is modified
+	 *          m_nbdWidth is modified
+	 */
     void decay();
 public:
+    /*
+     * Constructor
+     * Input: input stream, learning rate decay, neighbourhood width decay, learning rate,
+     *        and neighbourhood width
+     * Output: Instantiated kohonen network
+     * Effects: m_output elements are set to random values in the range (-0.1, 0.1)
+     *          m_input is filled with data from is
+     */
     kohonen(std::istream& is, const T& lr_decay, const T& nbd_width_decay, const T& lr,
             const T& nbd_width);
-            
+    
+    /*
+     * Neural network trainer
+     * Input: Number of epochs
+     * Output: n/a
+     * Effects: m_output is modified
+     *          m_learningRate is modified
+     *          m_nbdWidth is modified
+     */
     void train(const size_t epochs);
     
+    /*
+     * Printer function
+     * Input: n/a
+     * Output: n/a
+     * Effects: m_output is printed to screen
+     */
     void print() const;
 };
 

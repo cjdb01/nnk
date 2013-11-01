@@ -107,6 +107,8 @@ inline std::array<T, Area> kohonen<T, Input, X, Y, Area>::compete(input_iterator
         T sum = 0;
         for (size_t j = 0; j < Input; ++j)
         {
+            // If we're dealing with a 1D SOM, we use |i - j|, otherwise we use the euclidean
+            // distance
             sum += Y == 1 ? std::abs(m_output[i][j] - (*x)[j]) :
                             maths::square(m_output[i][j] - (*x)[j]);
         }
@@ -140,55 +142,6 @@ inline void kohonen<T, I, X, Y, A>::adapt(input_iterator& x, output_iterator& wi
         }
     }
 }
-
-/*
-template <typename T, size_t Input, size_t X, size_t Y, size_t Area>
-inline typename kohonen<T, Input, X, Y, Area>::output_iterator
-kohonen<T, Input, X, Y, Area>::compete(const_input_iterator& x)
-{    
-    // m[j] = sqrt (sum over i: (w[i][j] - x[i])^2)
-    std::array<T, Area> m;
-    for (size_t i = 0; i < Area; ++i)
-    {
-        T sum = static_cast<T>(0);
-        for (size_t j = 0; j < Input; ++j)
-        {
-            sum += maths::square(m_output[i][j] - (*x)[j]);
-        }
-        
-        m[i] = std::sqrt(sum);
-    }
-    
-	return find_min_element(m);
-}
-
-template <typename T, size_t Input, size_t X, size_t Y, size_t Area>
-inline typename kohonen<T, Input, X, Y, Area>::output_iterator
-kohonen<T, Input, X, Y, Area>::find_min_element(const std::array<T, Area>& m)
-{
-	size_t min = 0;
-	for (size_t i = 1; i < Area; ++i)
-	{
-		if (m[i] > m[min])
-		{
-			min = i;
-		}
-	}
-
-	return m_output.begin();
-}
-
-template <typename T, size_t Input, size_t X, size_t Y, size_t A>
-inline void kohonen<T, Input, X, Y, A>::adjust_neighbours(const_input_iterator& x, const output_iterator& winner)
-{
-    for (auto i = 0; i < A; ++i)
-    {
-        for (size_t j = 0; j < Input; ++j)
-        {
-            m_output[i][j] += m_learningRate * h(*(m_output.begin() + i), *winner) * ((*x)[j] - m_output[i][j]);
-        }
-    }
-}*/
 
 template <typename T, size_t I, size_t X, size_t Y, size_t A>
 inline T kohonen<T, I, X, Y, A>::h(const input_type& input, const input_type& winner)
